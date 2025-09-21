@@ -4,7 +4,7 @@ const cors = require("cors");
 const authRoutes = require("./routes/auth.routes");
 const doctorRoutes = require("./routes/doctors.routes");
 const appointmentRoutes = require("./routes/appointment.routes");
-
+const questionRoutes = require("./routes/question.routes");
 const app = express();
 
 app.use(cors());
@@ -14,6 +14,8 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/questions", questionRoutes);
+
 
 app.get("/", (req, res) => res.send("FairyMate Backend Running"));
 

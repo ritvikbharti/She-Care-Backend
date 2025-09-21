@@ -167,7 +167,7 @@ const seedDoctors = async () => {
     await connectDB();                 // Connect to MongoDB
     await Doctor.deleteMany();         // Clear existing doctors
     await Doctor.insertMany(doctors);  // Insert seed data
-    console.log("✅ Doctors seeded successfully!");
+    console.log(" Doctors seeded successfully!");
     process.exit();
   } catch (err) {
     console.error(err);
