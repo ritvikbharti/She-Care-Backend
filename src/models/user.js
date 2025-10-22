@@ -1,16 +1,15 @@
-// models/user.js
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  firstName: { type: String, required: true },
+  lastName: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
 
-  // ✅ Store quiz submissions
   quizReports: [
     {
-      answers: { type: Object, required: true }, // all selected answers
-      report: { type: Object, required: true },  // riskLevel, score, recommendations
+      answers: { type: Object, required: true },
+      report: { type: Object, required: true },
       createdAt: { type: Date, default: Date.now }
     }
   ]
