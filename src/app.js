@@ -7,12 +7,13 @@ const appointmentRoutes = require("./routes/appointment.routes");
 const questionRoutes = require("./routes/question.routes");
 const mlRoutes = require("./routes/ml.routes");
 const app = express();
-
+const reportRoutes = require("./routes/reportRoutes.routes");
 app.use(cors());
 app.use(express.json());
 
 // routes
 app.use("/api/auth", authRoutes);
+app.use("/api/reports", reportRoutes);
 app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/questions", questionRoutes);
