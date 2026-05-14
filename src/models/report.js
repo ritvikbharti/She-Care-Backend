@@ -4,7 +4,7 @@ const reportSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: false
+    required: true,
   },
 
   inputs: {
@@ -16,23 +16,23 @@ const reportSchema = new mongoose.Schema({
     AMH: Number,
     Follicle_No_L: Number,
     Follicle_No_R: Number,
-    Endometrium: Number
+    Endometrium: Number,
   },
 
   riskPercentage: {
     type: Number,
-    required: true
+    required: true,
   },
 
   detected: {
     type: Boolean,
-    required: true
+    required: true,
   },
 
   createdAt: {
     type: Date,
-    default: Date.now
-  }
+    default: Date.now,
+  },
 });
 
 module.exports = mongoose.model("Report", reportSchema);

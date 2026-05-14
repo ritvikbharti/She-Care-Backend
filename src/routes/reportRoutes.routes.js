@@ -4,13 +4,13 @@ const protect = require("../middlewares/auth"); // ✅ add auth
 
 const router = express.Router();
 
-// ✅ Save report — attaches userId from token if logged in
-router.post("/add", async (req, res) => {
+//  Save report — attaches userId from token if logged in
+router.post("/add", protect, async (req, res) => {
   try {
-    const { userId, inputs, riskPercentage, detected } = req.body;
+    const { inputs, riskPercentage, detected } = req.body;
 
     const report = new Report({
-      userId: userId || null,
+      userId: req.user._id,
       inputs,
       riskPercentage,
       detected,
@@ -19,11 +19,11 @@ router.post("/add", async (req, res) => {
     await report.save();
     res.status(201).json({ message: "Report saved successfully", report });
   } catch (error) {
-    res.status(500).json({ message: "Failed to save report", error });
+    res.status(500).json({ message: "Failed to save report", error: error.message });
   }
 });
 
-// ✅ Get reports for the logged-in user only (was returning ALL users' reports before)
+// Get reports for the logged-in user only (was returning ALL users' reports before)
 router.get("/my", protect, async (req, res) => {
   try {
     const reports = await Report.find({ userId: req.user._id }).sort({ createdAt: -1 });
@@ -33,7 +33,7 @@ router.get("/my", protect, async (req, res) => {
   }
 });
 
-// ✅ Get all reports — admin use only (keep but don't expose to regular users)
+// Get all reports — admin use only (keep but don't expose to regular users)
 router.get("/all", async (req, res) => {
   try {
     const reports = await Report.find().sort({ createdAt: -1 });
