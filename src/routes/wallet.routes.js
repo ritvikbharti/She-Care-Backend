@@ -6,7 +6,7 @@ const User    = require("../models/user");
 
 const router = express.Router();
 
-// ✅ Lazy init — called inside handlers so process.env is already loaded
+// Lazy init — called inside handlers so process.env is already loaded
 function getRazorpay() {
   if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
     throw new Error("RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET must be set in .env");
@@ -16,6 +16,8 @@ function getRazorpay() {
     key_secret: process.env.RAZORPAY_KEY_SECRET,
   });
 }
+
+
 
 // ── GET /api/wallet/balance ─────────────────────────────────────────────────
 // Returns current wallet balance + last 20 transactions
@@ -105,6 +107,39 @@ router.post("/verify", protect, async (req, res) => {
   } catch (err) {
     console.error("Verify error:", err);
     res.status(500).json({ message: "Verification failed", error: err.message });
+  }
+});
+
+router.post("/debit", protect, async (req, res) => {
+  try {
+    const { amount, note } = req.body;
+
+    if (!amount || amount < 1) {
+      return res.status(400).json({ message: "Invalid amount" });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (user.walletBalance < amount) {
+      return res.status(400).json({ message: "Insufficient wallet balance" });
+    }
+
+    user.walletBalance -= amount;
+
+    user.transactions.push({
+      type: "debit",
+      amount,
+      note: note || "Wallet Debit",
+    });
+
+    await user.save();
+
+    res.json({
+      message: "Amount debited successfully",
+      balance: user.walletBalance,
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Debit failed", error: err.message });
   }
 });
 
