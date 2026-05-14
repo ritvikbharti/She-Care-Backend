@@ -35,24 +35,27 @@ router.get("/balance", protect, async (req, res) => {
 // Creates a Razorpay order; frontend opens the checkout with this orderId
 router.post("/create-order", protect, async (req, res) => {
   try {
-    const { amount } = req.body; // amount in rupees, e.g. 500
+    const { amount } = req.body;
 
     if (!amount || amount < 1) {
       return res.status(400).json({ message: "Invalid amount" });
     }
 
     const razorpay = getRazorpay();
+
+    const receipt = `w_${req.user._id.toString().slice(0, 10)}_${Date.now()}`;
+
     const order = await razorpay.orders.create({
-      amount:   Math.round(amount * 100), // Razorpay expects paise
+      amount: Math.round(amount * 100),
       currency: "INR",
-      receipt:  `wallet_${req.user._id}_${Date.now()}`,
+      receipt,
     });
 
     res.json({
-      orderId:  order.id,
-      amount:   order.amount,
+      orderId: order.id,
+      amount: order.amount,
       currency: order.currency,
-      key:      process.env.RAZORPAY_KEY_ID, // send key to frontend
+      key: process.env.RAZORPAY_KEY_ID,
     });
   } catch (err) {
     console.error("Razorpay order error:", err);
