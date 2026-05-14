@@ -1,4 +1,5 @@
-const Doctor = require("../models/Doctor");
+// ✅ Fixed: was require("../models/Doctor") — capital D crashes on Linux (case-sensitive FS)
+const Doctor = require("../models/doctors");
 
 // Get all doctors with optional search/filter
 exports.getDoctors = async (req, res) => {
@@ -17,7 +18,7 @@ exports.getDoctors = async (req, res) => {
   }
 };
 
-// Add a new doctor (optional admin functionality)
+// Add a new doctor (admin)
 exports.addDoctor = async (req, res) => {
   try {
     const newDoctor = await Doctor.create(req.body);

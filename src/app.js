@@ -8,6 +8,8 @@ const questionRoutes = require("./routes/question.routes");
 const mlRoutes = require("./routes/ml.routes");
 const app = express();
 const reportRoutes = require("./routes/reportRoutes.routes");
+const walletRoutes      = require("./routes/wallet.routes"); // ✅ new
+
 app.use(cors());
 app.use(express.json());
 
@@ -18,8 +20,8 @@ app.use("/api/doctors", doctorRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/questions", questionRoutes);
 app.use("/api/ml", mlRoutes);
+app.use("/api/wallet",  walletRoutes);
 
-
-app.get("/", (req, res) => res.send("FairyMate Backend Running"));
+app.get("/", (req, res) => res.send("SheCare Backend Running"));
 
 module.exports = app;
