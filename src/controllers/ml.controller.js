@@ -37,7 +37,7 @@ exports.predictPCOS = async (req, res) => {
     const HF_URL =
       "https://ritvikbharti01-pcos-ml-api.hf.space";
 
-    // STEP 1: Start prediction
+    // STEP 1
     const startPrediction = await axios.post(
       `${HF_URL}/gradio_api/call/v2/predict`,
       {
@@ -54,35 +54,29 @@ exports.predictPCOS = async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json"
-        },
-        timeout: 60000
+        }
       }
     );
 
-    // STEP 2: Get event_id
     const eventId = startPrediction.data.event_id;
 
     if (!eventId) {
-      throw new Error("No event_id returned from Hugging Face");
+      throw new Error("No event_id returned");
     }
 
-    // STEP 3: Wait a little
-    await new Promise(resolve => setTimeout(resolve, 4000));
-
-    // STEP 4: Fetch result
+    // STEP 2
     const resultResponse = await axios.get(
-      `${HF_URL}/gradio_api/call/predict/${eventId}`,
+      `${HF_URL}/gradio_api/call/v2/predict/${eventId}`,
       {
-        timeout: 60000
+        responseType: "text"
       }
     );
 
     const raw = resultResponse.data;
 
-    console.log("HF RAW RESPONSE:", raw);
+    console.log(raw);
 
-    // STEP 5: Extract JSON from SSE response
-    const match = raw.match(/data:\s*(\{.*\})/s);
+    const match = raw.match(/data:\s*(\[.*\])/s);
 
     if (!match) {
       throw new Error("Could not extract prediction JSON");
@@ -92,7 +86,6 @@ exports.predictPCOS = async (req, res) => {
 
     const prediction = parsed[0];
 
-    // STEP 6: Return clean response
     return res.json({
       success: true,
       riskPercentage:
@@ -111,7 +104,8 @@ exports.predictPCOS = async (req, res) => {
     return res.status(500).json({
       success: false,
       error: "Prediction failed",
-      details: err.response?.data || err.message,
+      details:
+        err.response?.data || err.message
     });
   }
 };
