@@ -29,7 +29,6 @@
 //   }
 // };
 
-
 const axios = require("axios");
 
 exports.predictPCOS = async (req, res) => {
@@ -38,7 +37,7 @@ exports.predictPCOS = async (req, res) => {
     const HF_URL =
       "https://ritvikbharti01-pcos-ml-api.hf.space";
 
-    // Step 1: Send request to Hugging Face
+    // STEP 1: Start prediction
     const startPrediction = await axios.post(
       `${HF_URL}/gradio_api/call/v2/predict`,
       {
@@ -55,37 +54,51 @@ exports.predictPCOS = async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json"
-        }
+        },
+        timeout: 60000
       }
     );
 
-    // Step 2: Get event ID
+    // STEP 2: Get event_id
     const eventId = startPrediction.data.event_id;
 
-    // Step 3: Fetch prediction result
-    const resultResponse = await axios.get(
-      `${HF_URL}/gradio_api/call/predict/${eventId}`
-    );
-
-    // Step 4: Extract prediction data
-    const responseText = resultResponse.data;
-
-    // Gradio sometimes returns string/SSE response
-    const jsonMatch = responseText.match(/\{.*\}/s);
-
-    if (!jsonMatch) {
-      throw new Error("Could not parse prediction response");
+    if (!eventId) {
+      throw new Error("No event_id returned from Hugging Face");
     }
 
-    const parsed = JSON.parse(jsonMatch[0]);
+    // STEP 3: Wait a little
+    await new Promise(resolve => setTimeout(resolve, 4000));
 
-    const prediction = parsed.data[0];
+    // STEP 4: Fetch result
+    const resultResponse = await axios.get(
+      `${HF_URL}/gradio_api/call/predict/${eventId}`,
+      {
+        timeout: 60000
+      }
+    );
 
-    // Step 5: Send clean response to frontend
+    const raw = resultResponse.data;
+
+    console.log("HF RAW RESPONSE:", raw);
+
+    // STEP 5: Extract JSON from SSE response
+    const match = raw.match(/data:\s*(\{.*\})/s);
+
+    if (!match) {
+      throw new Error("Could not extract prediction JSON");
+    }
+
+    const parsed = JSON.parse(match[1]);
+
+    const prediction = parsed[0];
+
+    // STEP 6: Return clean response
     return res.json({
       success: true,
-      riskPercentage: prediction.pcos_probability * 100,
-      detected: prediction.pcos_detected === 1,
+      riskPercentage:
+        prediction.pcos_probability * 100,
+      detected:
+        prediction.pcos_detected === 1
     });
 
   } catch (err) {
